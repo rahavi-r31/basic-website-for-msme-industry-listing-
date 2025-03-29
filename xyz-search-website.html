@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XYZ - Company Search</title>
+  <style>
+    :root {
+      --primary-color: #008996;
+      --secondary-color: #f5f5f5;
+      --border-color: #ddd;
+      --dark-text: #333;
+    }
+    
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: var(--dark-text);
+      background-color: #fff;
+    }
+    
+    .header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .search-panel {
+      background-color: var(--secondary-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .search-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    .search-form {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .search-form {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    .industry-selector {
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 1rem;
+      background-color: white;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    
+    .checkbox-item {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .checkbox-item {
+        width: 50%;
+      }
+    }
+    
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.5rem;
+      gap: 1rem;
+    }
+    
+    .btn {
+      padding: 0.5rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-secondary {
+      background-color: #f0f0f0;
+      color: var(--dark-text);
+      border: 1px solid var(--border-color);
+    }
+    
+    .btn:hover {
+      opacity: 0.9;
+    }
+    
+    .results-panel {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 1.5rem;
+    }
+    
+    .results-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .result-count {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .result-item {
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .result-item {
+        grid-template-columns: 200px 1fr;
+      }
+    }
+    
+    .company-logo {
+      width: 180px;
+      height: 120px;
+      background-color: #f9f9f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+    }
+    
+    .company-info h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+    
+    .company-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .company-tag {
+      background-color: #f0f0f0;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+    
+    .company-description {
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    
+    .company-link {
+      display: inline-block;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: bold;
+    }
+    
+    .company-link:hover {
+      text-decoration: underline;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      font-style: italic;
+      color: #666;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      font-style: italic;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>XYZ - Company Search</h1>
+  </header>
+  
+  <div class="container">
+    <div class="search-panel">
+      <div class="search-title">Search Conditions</div>
+      <div class="search-form">
+        <div class="form-group">
+          <label for="keyword">Keyword</label>
+          <input type="text" id="keyword" placeholder="Enter company name, products, etc.">
+        </div>
+        
+        <div class="form-group">
+          <label for="location">Location</label>
+          <select id="location">
+            <option value="">All Locations</option>
+            <option value="Tokyo">Tokyo</option>
+            <option value="Osaka">Osaka</option>
+            <option value="Fukuoka">Fukuoka</option>
+            <option value="Hokkaido">Hokkaido</option>
+            <option value="Kyoto">Kyoto</option>
+          </select>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Industry</label>
+          <div class="industry-selector">
+            <div class="checkbox-group" id="industry-checkboxes">
+              <!-- Industry checkboxes will be dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button id="search-btn" class="btn btn-primary">Search</button>
+        <button id="reset-btn" class="btn btn-secondary">Reset</button>
+      </div>
+    </div>
+    
+    <div class="results-panel">
+      <div class="results-title">
+        <span>Search Results</span>
+        <span class="result-count" id="result-count">0 results</span>
+      </div>
+      
+      <div id="results-container">
+        <div class="loading">Loading results...</div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Industry list - This can be customized
+    const industries = [
+      "Agriculture & Forestry",
+      "Food Manufacturing",
+      "Textiles & Apparel",
+      "Wood & Paper Products",
+      "Chemicals & Materials",
+      "Pharmaceuticals",
+      "Petroleum & Coal Products",
+      "Rubber & Plastic Products",
+      "Ceramics & Glass",
+      "Steel & Metal Products",
+      "Machinery & Equipment",
+      "Electronics & Components",
+      "Transportation Equipment",
+      "Precision Instruments",
+      "Other Manufacturing",
+      "Information Technology",
+      "Biotechnology",
+      "Environmental Technology",
+      "Energy & Resources",
+      "Construction & Real Estate"
+    ];
+    
+    // Populate industry checkboxes
+    function populateIndustries() {
+      const container = document.getElementById('industry-checkboxes');
+      
+      industries.forEach((industry, index) => {
+        const checkboxItem = document.createElement('div');
+        checkboxItem.className = 'checkbox-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `industry-${index}`;
+        checkbox.value = industry;
+        
+        const label = document.createElement('label');
+        label.htmlFor = `industry-${index}`;
+        label.textContent = industry;
+        
+        checkboxItem.appendChild(checkbox);
+        checkboxItem.appendChild(label);
+        container.appendChild(checkboxItem);
+      });
+    }
+    
+    // Filter products based on search criteria
+    function filterProducts(products) {
+      const keyword = document.getElementById('keyword').value.toLowerCase();
+      const location = document.getElementById('location').value;
+      const selectedIndustries = Array.from(document.querySelectorAll('#industry-checkboxes input:checked'))
+        .map(checkbox => checkbox.value);
+      
+      return products.filter(product => {
+        // Keyword filter
+        const keywordMatch = !keyword || 
+          product.name.toLowerCase().includes(keyword) || 
+          product.description.toLowerCase().includes(keyword) ||
+          (product.products && product.products.toLowerCase().includes(keyword));
+        
+        // Location filter
+        const locationMatch = !location || product.location === location;
+        
+        // Industry filter
+        const industryMatch = selectedIndustries.length === 0 || 
+          selectedIndustries.some(industry => product.industry.includes(industry));
+        
+        return keywordMatch && locationMatch && industryMatch;
+      });
+    }
+    
+    // Display filtered products
+    function displayResults(filteredProducts) {
+      const resultsContainer = document.getElementById('results-container');
+      const resultCount = document.getElementById('result-count');
+      
+      // Update result count
+      resultCount.textContent = `${filteredProducts.length} results`;
+      
+      // Clear previous results
+      resultsContainer.innerHTML = '';
+      
+      if (filteredProducts.length === 0) {
+        resultsContainer.innerHTML = '<div class="no-results">No matching companies found.</div>';
+        return;
+      }
+      
+      // Display each product
+      filteredProducts.forEach(product => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'result-item';
+        
+        // Create logo container
+        const logoDiv = document.createElement('div');
+        logoDiv.className = 'company-logo';
+        if (product.logo) {
+          const img = document.createElement('img');
+          img.src = product.logo;
+          img.alt = `${product.name} logo`;
+          img.style.maxWidth = '100%';
+          img.style.maxHeight = '100%';
+          logoDiv.appendChild(img);
+        } else {
+          logoDiv.textContent = product.name.charAt(0);
+        }
+        
+        // Create company info
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'company-info';
+        
+        // Company name
+        const title = document.createElement('h3');
+        title.textContent = product.name;
+        infoDiv.appendChild(title);
+        
+        // Company tags
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'company-meta';
+        
+        // Location tag
+        const locationTag = document.createElement('span');
+        locationTag.className = 'company-tag';
+        locationTag.textContent = product.location;
+        metaDiv.appendChild(locationTag);
+        
+        // Industry tag
+        const industryTag = document.createElement('span');
+        industryTag.className = 'company-tag';
+        industryTag.textContent = product.industry;
+        metaDiv.appendChild(industryTag);
+        
+        infoDiv.appendChild(metaDiv);
+        
+        // Company description
+        const description = document.createElement('p');
+        description.className = 'company-description';
+        description.textContent = product.description;
+        infoDiv.appendChild(description);
+        
+        // Company link
+        if (product.website) {
+          const link = document.createElement('a');
+          link.href = product.website;
+          link.className = 'company-link';
+          link.textContent = 'View Details →';
+          link.target = '_blank';
+          infoDiv.appendChild(link);
+        }
+        
+        // Append to result item
+        resultItem.appendChild(logoDiv);
+        resultItem.appendChild(infoDiv);
+        
+        // Add to results container
+        resultsContainer.appendChild(resultItem);
+      });
+    }
+    
+    // Fetch products from API
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products');
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        return [];
+      }
+    }
+    
+    // Initialize the app
+    async function initApp() {
+      // Populate industry checkboxes
+      populateIndustries();
+      
+      // Fetch initial products
+      const products = await fetchProducts();
+      
+      // Display all products initially
+      displayResults(products);
+      
+      // Add event listener for search button
+      document.getElementById('search-btn').addEventListener('click', async () => {
+        const filteredProducts = filterProducts(products);
+        displayResults(filteredProducts);
+      });
+      
+      // Add event listener for reset button
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        // Clear form inputs
+        document.getElementById('keyword').value = '';
+        document.getElementById('location').value = '';
+        
+        // Uncheck all industry checkboxes
+        document.querySelectorAll('#industry-checkboxes input').forEach(checkbox => {
+          checkbox.checked = false;
+        });
+        
+        // Reset results to show all products
+        displayResults(products);
+      });
+    }
+    
+    // Start the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
