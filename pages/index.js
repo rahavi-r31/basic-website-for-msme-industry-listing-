@@ -2,29 +2,16 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 
-// Industry list - This can be customized
-const industries = [
-  "Agriculture & Forestry",
-  "Food Manufacturing",
-  "Textiles & Apparel",
-  "Wood & Paper Products",
-  "Chemicals & Materials",
-  "Pharmaceuticals",
-  "Petroleum & Coal Products",
-  "Rubber & Plastic Products",
-  "Ceramics & Glass",
-  "Steel & Metal Products",
-  "Machinery & Equipment",
-  "Electronics & Components",
-  "Transportation Equipment",
-  "Precision Instruments",
-  "Other Manufacturing",
-  "Information Technology",
-  "Biotechnology",
-  "Environmental Technology",
-  "Energy & Resources",
-  "Construction & Real Estate"
-];
+// Extract unique industries from the data
+function extractIndustries(products) {
+  const uniqueIndustries = new Set();
+  products.forEach(product => {
+    if (product.industry) {
+      uniqueIndustries.add(product.industry);
+    }
+  });
+  return Array.from(uniqueIndustries).sort();
+}
 
 export default function Home() {
   const [keyword, setKeyword] = useState('');
@@ -33,6 +20,8 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [industries, setIndustries] = useState([]);
+  const [expandedCompany, setExpandedCompany] = useState(null);
 
   // Fetch products on component mount
   useEffect(() => {
@@ -45,6 +34,7 @@ export default function Home() {
         const data = await response.json();
         setProducts(data);
         setFilteredProducts(data);
+        setIndustries(extractIndustries(data));
         setLoading(false);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -67,18 +57,29 @@ export default function Home() {
   // Filter products based on search criteria
   const handleSearch = () => {
     const filtered = products.filter(product => {
-      // Keyword filter
-      const keywordMatch = !keyword || 
-        product.name.toLowerCase().includes(keyword.toLowerCase()) || 
-        product.description.toLowerCase().includes(keyword.toLowerCase()) ||
-        (product.products && product.products.toLowerCase().includes(keyword.toLowerCase()));
+      // Keyword filter - search across multiple fields
+      const searchFields = [
+        product.name,
+        product.description,
+        product.products,
+        product.industry,
+        product.location,
+        product.companyDetails?.email,
+        product.companyDetails?.services
+      ].filter(Boolean);
       
-      // Location filter
-      const locationMatch = !location || product.location === location;
+      const keywordMatch = !keyword || 
+        searchFields.some(field => 
+          field.toLowerCase().includes(keyword.toLowerCase())
+        );
+      
+      // Location filter - partial match on location
+      const locationMatch = !location || 
+        product.location.toLowerCase().includes(location.toLowerCase());
       
       // Industry filter
       const industryMatch = selectedIndustries.length === 0 || 
-        selectedIndustries.some(industry => product.industry.includes(industry));
+        selectedIndustries.includes(product.industry);
       
       return keywordMatch && locationMatch && industryMatch;
     });
@@ -92,6 +93,15 @@ export default function Home() {
     setLocation('');
     setSelectedIndustries([]);
     setFilteredProducts(products);
+  };
+
+  // Toggle company details expansion
+  const toggleCompanyDetails = (index) => {
+    if (expandedCompany === index) {
+      setExpandedCompany(null);
+    } else {
+      setExpandedCompany(index);
+    }
   };
 
   return (
@@ -123,22 +133,17 @@ export default function Home() {
             
             <div className={styles.formGroup}>
               <label htmlFor="location">Location</label>
-              <select 
+              <input 
+                type="text" 
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-              >
-                <option value="">All Locations</option>
-                <option value="Tokyo">Tokyo</option>
-                <option value="Osaka">Osaka</option>
-                <option value="Fukuoka">Fukuoka</option>
-                <option value="Hokkaido">Hokkaido</option>
-                <option value="Kyoto">Kyoto</option>
-              </select>
+                placeholder="Enter location or address"
+              />
             </div>
             
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-              <label>Industry</label>
+              <label>Industry Type</label>
               <div className={styles.industrySelector}>
                 <div className={styles.checkboxGroup}>
                   {industries.map((industry, index) => (
@@ -182,33 +187,115 @@ export default function Home() {
           ) : (
             filteredProducts.map((product, index) => (
               <div key={index} className={styles.resultItem}>
-                <div className={styles.companyLogo}>
-                  {product.logo ? (
-                    <img 
-                      src={product.logo} 
-                      alt={`${product.name} logo`}
-                      style={{ maxWidth: '100%', maxHeight: '100%' }}
-                    />
-                  ) : (
-                    product.name.charAt(0)
-                  )}
-                </div>
                 <div className={styles.companyInfo}>
                   <h3>{product.name}</h3>
                   <div className={styles.companyMeta}>
-                    <span className={styles.companyTag}>{product.location}</span>
                     <span className={styles.companyTag}>{product.industry}</span>
+                    {product.companyDetails?.year && (
+                      <span className={styles.companyTag}>Est. {product.companyDetails.year}</span>
+                    )}
                   </div>
+                  
                   <p className={styles.companyDescription}>{product.description}</p>
-                  {product.website && (
-                    <a 
-                      href={product.website}
-                      className={styles.companyLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  
+                  {product.products && (
+                    <div className={styles.productsSection}>
+                      <strong>Products:</strong> {product.products}
+                    </div>
+                  )}
+                  
+                  <div className={styles.contactRow}>
+                    {product.companyDetails?.email && (
+                      <div className={styles.contactItem}>
+                        <strong>Email:</strong> {product.companyDetails.email}
+                      </div>
+                    )}
+                    {product.companyDetails?.phone && (
+                      <div className={styles.contactItem}>
+                        <strong>Phone:</strong> {product.companyDetails.phone}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.addressSection}>
+                    <strong>Address:</strong> {product.location}
+                  </div>
+                  
+                  <div className={styles.actionRow}>
+                    {product.website && (
+                      <a 
+                        href={product.website}
+                        className={styles.companyLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Visit Website
+                      </a>
+                    )}
+                    <button 
+                      className={styles.detailsToggle}
+                      onClick={() => toggleCompanyDetails(index)}
                     >
-                      View Details →
-                    </a>
+                      {expandedCompany === index ? 'Hide Details' : 'Show Details'}
+                    </button>
+                  </div>
+                  
+                  {expandedCompany === index && (
+                    <div className={styles.expandedDetails}>
+                      <h4>Company Details</h4>
+                      <div className={styles.detailsGrid}>
+                        {product.companyDetails?.contactPerson && (
+                          <div className={styles.detailItem}>
+                            <strong>Contact Person:</strong> {product.companyDetails.contactPerson}
+                          </div>
+                        )}
+                        {product.companyDetails?.contactNumber && (
+                          <div className={styles.detailItem}>
+                            <strong>Contact Number:</strong> {product.companyDetails.contactNumber}
+                          </div>
+                        )}
+                        {product.companyDetails?.fax && (
+                          <div className={styles.detailItem}>
+                            <strong>Fax:</strong> {product.companyDetails.fax}
+                          </div>
+                        )}
+                        {product.companyDetails?.employees && (
+                          <div className={styles.detailItem}>
+                            <strong>Employees:</strong> {product.companyDetails.employees}
+                          </div>
+                        )}
+                        {product.companyDetails?.annualProduction && (
+                          <div className={styles.detailItem}>
+                            <strong>Annual Production:</strong> {product.companyDetails.annualProduction}
+                          </div>
+                        )}
+                        {product.companyDetails?.consumption && (
+                          <div className={styles.detailItem}>
+                            <strong>Consumption:</strong> {product.companyDetails.consumption}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {product.companyDetails?.plantAddress && (
+                        <div className={styles.plantSection}>
+                          <h4>Plant Information</h4>
+                          <div><strong>Address:</strong> {product.companyDetails.plantAddress}</div>
+                          {product.companyDetails?.plantPhone && (
+                            <div><strong>Phone:</strong> {product.companyDetails.plantPhone}</div>
+                          )}
+                          {product.companyDetails?.plantEmail && (
+                            <div><strong>Email:</strong> {product.companyDetails.plantEmail}</div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {product.companyDetails?.services && (
+                        <div className={styles.servicesSection}>
+                          <h4>Services</h4>
+                          <div>{product.companyDetails.services}</div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
