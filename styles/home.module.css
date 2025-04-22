@@ -157,37 +157,19 @@
 .resultItem {
   border-bottom: 1px solid #ddd;
   padding: 1rem 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .resultItem {
-    grid-template-columns: 200px 1fr;
-  }
-}
-
-.companyLogo {
-  width: 180px;
-  height: 120px;
-  background-color: #f9f9f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #ddd;
 }
 
 .companyInfo h3 {
   margin-top: 0;
   color: #008996;
+  margin-bottom: 0.5rem;
 }
 
 .companyMeta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .companyTag {
@@ -202,15 +184,97 @@
   line-height: 1.5;
 }
 
+.contactRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.contactItem {
+  font-size: 0.9rem;
+}
+
+.addressSection {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.productsSection {
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.actionRow {
+  display: flex;
+  margin-top: 1rem;
+  gap: 1rem;
+  align-items: center;
+}
+
 .companyLink {
   display: inline-block;
   color: #008996;
   text-decoration: none;
   font-weight: bold;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid #008996;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .companyLink:hover {
+  background-color: #008996;
+  color: white;
+}
+
+.detailsToggle {
+  background: none;
+  border: none;
+  color: #555;
   text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.expandedDetails {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #ddd;
+}
+
+.expandedDetails h4 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  color: #555;
+  font-size: 1rem;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .detailsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.detailItem {
+  font-size: 0.9rem;
+}
+
+.plantSection, .servicesSection {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.plantSection h4, .servicesSection h4 {
+  margin-bottom: 0.5rem;
 }
 
 .loading {
