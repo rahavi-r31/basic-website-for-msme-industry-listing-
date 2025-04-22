@@ -1,0 +1,573 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ - Company Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .search-panel {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .search-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .industry-selector {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-item input {
+            margin-right: 5px;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+        .results-panel {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .results-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .result-count {
+            font-size: 14px;
+            color: #666;
+        }
+        .loading, .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .result-item {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .company-info h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .company-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .company-tag {
+            background-color: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .company-description {
+            margin-bottom: 10px;
+        }
+        .products-section, .contact-row, .address-section {
+            margin-bottom: 10px;
+        }
+        .contact-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .action-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .company-link {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .details-toggle {
+            background: none;
+            border: none;
+            color: #4CAF50;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+        }
+        .expanded-details {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .expanded-details h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .plant-section, .services-section {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>XYZ - Company Search</h1>
+        </header>
+
+        <main>
+            <div class="search-panel">
+                <div class="search-title">Search Conditions</div>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label for="keyword">Keyword</label>
+                        <input type="text" id="keyword" placeholder="Enter company name, products, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" placeholder="Enter location or address">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Industry Type</label>
+                        <div class="industry-selector">
+                            <div class="checkbox-group" id="industry-checkboxes">
+                                <!-- Industry checkboxes will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="search-btn" class="btn btn-primary">Search</button>
+                    <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+            
+            <div class="results-panel">
+                <div class="results-title">
+                    <span>Search Results</span>
+                    <span class="result-count" id="result-count">0 results</span>
+                </div>
+                
+                <div id="results-container">
+                    <div class="loading">Loading results...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const keywordInput = document.getElementById('keyword');
+            const locationInput = document.getElementById('location');
+            const industryCheckboxes = document.getElementById('industry-checkboxes');
+            const searchBtn = document.getElementById('search-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const resultCount = document.getElementById('result-count');
+            const resultsContainer = document.getElementById('results-container');
+            
+            // Store all products and industries
+            let allProducts = [];
+            let selectedIndustries = [];
+
+            // Extract unique industries from data
+            function extractIndustries(products) {
+                const uniqueIndustries = new Set();
+                products.forEach(product => {
+                    if (product.industry) {
+                        uniqueIndustries.add(product.industry);
+                    }
+                });
+                return Array.from(uniqueIndustries).sort();
+            }
+
+            // Generate industry checkboxes
+            function generateIndustryCheckboxes(industries) {
+                industryCheckboxes.innerHTML = '';
+                industries.forEach((industry, index) => {
+                    const checkboxItem = document.createElement('div');
+                    checkboxItem.className = 'checkbox-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `industry-${index}`;
+                    checkbox.value = industry;
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            selectedIndustries.push(industry);
+                        } else {
+                            selectedIndustries = selectedIndustries.filter(i => i !== industry);
+                        }
+                    });
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `industry-${index}`;
+                    label.textContent = industry;
+                    
+                    checkboxItem.appendChild(checkbox);
+                    checkboxItem.appendChild(label);
+                    industryCheckboxes.appendChild(checkboxItem);
+                });
+            }
+
+            // Filter products based on search criteria
+            function filterProducts() {
+                const keyword = keywordInput.value.toLowerCase();
+                const location = locationInput.value.toLowerCase();
+                
+                const filtered = allProducts.filter(product => {
+                    // Keyword filter - search across multiple fields
+                    const searchFields = [
+                        product.name,
+                        product.description,
+                        product.products,
+                        product.industry,
+                        product.location,
+                        product.companyDetails?.email,
+                        product.companyDetails?.services
+                    ].filter(Boolean);
+                    
+                    const keywordMatch = !keyword || 
+                        searchFields.some(field => 
+                            field.toLowerCase().includes(keyword)
+                        );
+                    
+                    // Location filter
+                    const locationMatch = !location || 
+                        product.location.toLowerCase().includes(location);
+                    
+                    // Industry filter
+                    const industryMatch = selectedIndustries.length === 0 || 
+                        selectedIndustries.includes(product.industry);
+                    
+                    return keywordMatch && locationMatch && industryMatch;
+                });
+                
+                displayResults(filtered);
+            }
+
+            // Display results
+            function displayResults(products) {
+                resultCount.textContent = `${products.length} results`;
+                
+                if (products.length === 0) {
+                    resultsContainer.innerHTML = '<div class="no-results">No matching companies found.</div>';
+                    return;
+                }
+                
+                resultsContainer.innerHTML = '';
+                products.forEach((product, index) => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const companyInfo = document.createElement('div');
+                    companyInfo.className = 'company-info';
+                    
+                    // Company name
+                    const name = document.createElement('h3');
+                    name.textContent = product.name;
+                    companyInfo.appendChild(name);
+                    
+                    // Company meta
+                    const meta = document.createElement('div');
+                    meta.className = 'company-meta';
+                    
+                    const industryTag = document.createElement('span');
+                    industryTag.className = 'company-tag';
+                    industryTag.textContent = product.industry;
+                    meta.appendChild(industryTag);
+                    
+                    if (product.companyDetails?.year) {
+                        const yearTag = document.createElement('span');
+                        yearTag.className = 'company-tag';
+                        yearTag.textContent = `Est. ${product.companyDetails.year}`;
+                        meta.appendChild(yearTag);
+                    }
+                    
+                    companyInfo.appendChild(meta);
+                    
+                    // Description
+                    const description = document.createElement('p');
+                    description.className = 'company-description';
+                    description.textContent = product.description;
+                    companyInfo.appendChild(description);
+                    
+                    // Products section
+                    if (product.products) {
+                        const productsSection = document.createElement('div');
+                        productsSection.className = 'products-section';
+                        productsSection.innerHTML = `<strong>Products:</strong> ${product.products}`;
+                        companyInfo.appendChild(productsSection);
+                    }
+                    
+                    // Contact information
+                    const contactRow = document.createElement('div');
+                    contactRow.className = 'contact-row';
+                    
+                    if (product.companyDetails?.email) {
+                        const email = document.createElement('div');
+                        email.className = 'contact-item';
+                        email.innerHTML = `<strong>Email:</strong> ${product.companyDetails.email}`;
+                        contactRow.appendChild(email);
+                    }
+                    
+                    if (product.companyDetails?.phone) {
+                        const phone = document.createElement('div');
+                        phone.className = 'contact-item';
+                        phone.innerHTML = `<strong>Phone:</strong> ${product.companyDetails.phone}`;
+                        contactRow.appendChild(phone);
+                    }
+                    
+                    companyInfo.appendChild(contactRow);
+                    
+                    // Address
+                    const address = document.createElement('div');
+                    address.className = 'address-section';
+                    address.innerHTML = `<strong>Address:</strong> ${product.location}`;
+                    companyInfo.appendChild(address);
+                    
+                    // Action row
+                    const actionRow = document.createElement('div');
+                    actionRow.className = 'action-row';
+                    
+                    if (product.website) {
+                        const website = document.createElement('a');
+                        website.className = 'company-link';
+                        website.href = product.website;
+                        website.target = '_blank';
+                        website.rel = 'noopener noreferrer';
+                        website.textContent = 'Visit Website';
+                        actionRow.appendChild(website);
+                    }
+                    
+                    const detailsToggle = document.createElement('button');
+                    detailsToggle.className = 'details-toggle';
+                    detailsToggle.textContent = 'Show Details';
+                    detailsToggle.dataset.index = index;
+                    actionRow.appendChild(detailsToggle);
+                    
+                    companyInfo.appendChild(actionRow);
+                    resultItem.appendChild(companyInfo);
+                    resultsContainer.appendChild(resultItem);
+                    
+                    // Set up event listener for details toggle
+                    detailsToggle.addEventListener('click', function() {
+                        const existingDetails = resultItem.querySelector('.expanded-details');
+                        
+                        if (existingDetails) {
+                            resultItem.removeChild(existingDetails);
+                            this.textContent = 'Show Details';
+                        } else {
+                            const expandedDetails = createExpandedDetails(product);
+                            companyInfo.appendChild(expandedDetails);
+                            this.textContent = 'Hide Details';
+                        }
+                    });
+                });
+            }
+
+            // Create expanded details section
+            function createExpandedDetails(product) {
+                const details = document.createElement('div');
+                details.className = 'expanded-details';
+                
+                // Company details
+                const title = document.createElement('h4');
+                title.textContent = 'Company Details';
+                details.appendChild(title);
+                
+                const detailsGrid = document.createElement('div');
+                detailsGrid.className = 'details-grid';
+                
+                const detailsToShow = [
+                    { label: 'Contact Person', value: product.companyDetails?.contactPerson },
+                    { label: 'Contact Number', value: product.companyDetails?.contactNumber },
+                    { label: 'Fax', value: product.companyDetails?.fax },
+                    { label: 'Employees', value: product.companyDetails?.employees },
+                    { label: 'Annual Production', value: product.companyDetails?.annualProduction },
+                    { label: 'Consumption', value: product.companyDetails?.consumption }
+                ];
+                
+                detailsToShow.forEach(detail => {
+                    if (detail.value) {
+                        const item = document.createElement('div');
+                        item.className = 'detail-item';
+                        item.innerHTML = `<strong>${detail.label}:</strong> ${detail.value}`;
+                        detailsGrid.appendChild(item);
+                    }
+                });
+                
+                details.appendChild(detailsGrid);
+                
+                // Plant information
+                if (product.companyDetails?.plantAddress) {
+                    const plantSection = document.createElement('div');
+                    plantSection.className = 'plant-section';
+                    
+                    const plantTitle = document.createElement('h4');
+                    plantTitle.textContent = 'Plant Information';
+                    plantSection.appendChild(plantTitle);
+                    
+                    const plantAddress = document.createElement('div');
+                    plantAddress.innerHTML = `<strong>Address:</strong> ${product.companyDetails.plantAddress}`;
+                    plantSection.appendChild(plantAddress);
+                    
+                    if (product.companyDetails?.plantPhone) {
+                        const plantPhone = document.createElement('div');
+                        plantPhone.innerHTML = `<strong>Phone:</strong> ${product.companyDetails.plantPhone}`;
+                        plantSection.appendChild(plantPhone);
+                    }
+                    
+                    if (product.companyDetails?.plantEmail) {
+                        const plantEmail = document.createElement('div');
+                        plantEmail.innerHTML = `<strong>Email:</strong> ${product.companyDetails.plantEmail}`;
+                        plantSection.appendChild(plantEmail);
+                    }
+                    
+                    details.appendChild(plantSection);
+                }
+                
+                // Services section
+                if (product.companyDetails?.services) {
+                    const servicesSection = document.createElement('div');
+                    servicesSection.className = 'services-section';
+                    
+                    const servicesTitle = document.createElement('h4');
+                    servicesTitle.textContent = 'Services';
+                    servicesSection.appendChild(servicesTitle);
+                    
+                    const services = document.createElement('div');
+                    services.textContent = product.companyDetails.services;
+                    servicesSection.appendChild(services);
+                    
+                    details.appendChild(servicesSection);
+                }
+                
+                return details;
+            }
+
+            // Fetch products data
+            async function fetchProducts() {
+                try {
+                    const response = await fetch('/api/products');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch products');
+                    }
+                    
+                    allProducts = await response.json();
+                    const industries = extractIndustries(allProducts);
+                    
+                    generateIndustryCheckboxes(industries);
+                    displayResults(allProducts);
+                } catch (error) {
+                    console.error('Error fetching products:', error);
+                    resultsContainer.innerHTML = '<div class="no-results">Error loading products. Please try again later.</div>';
+                }
+            }
+
+            // Reset search form
+            function resetForm() {
+                keywordInput.value = '';
+                locationInput.value = '';
+                selectedIndustries = [];
+                
+                // Reset checkboxes
+                const checkboxes = document.querySelectorAll('#industry-checkboxes input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                displayResults(allProducts);
+            }
+
+            // Event listeners
+            searchBtn.addEventListener('click', filterProducts);
+            resetBtn.addEventListener('click', resetForm);
+
+            // Initialize
+            fetchProducts();
+        });
+    </script>
+</body>
+</html>
