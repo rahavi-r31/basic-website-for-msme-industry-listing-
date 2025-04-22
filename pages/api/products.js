@@ -2,7 +2,7 @@ import axios from 'axios';
 import Papa from 'papaparse';
 
 // Google Sheets CSV URL (Replace with your own)
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTu0V1mPTPCNDrTtUZ9oab-OYlHRYabOVZOnYd7t2Ruz7rytwZ45ajxkefh5SziH5DpCdpGFtshqqz1/pub?output=csv";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1otFshEgsBOEeCoH6F6TfZdh0K1P6zNXRlbsAA4ZE-VxgzbYfdoSKq5864Wokp-t8UP8143iQF5Xo/pub?output=csv";
 
 export default async function handler(req, res) {
   try {
@@ -16,18 +16,30 @@ export default async function handler(req, res) {
       skipEmptyLines: true
     });
     
-    // Filter products where 'Listed' column is 'Yes'
-    const filteredProducts = results.data.filter(row => row.Listed === 'Yes');
-    
     // Transform data to match the expected format
-    const products = filteredProducts.map(row => ({
-      name: row.Name || 'Unknown Company',
-      description: row.Description || 'No description available',
-      location: row.Location || 'Unknown',
-      industry: row.Industry || 'Uncategorized',
-      products: row.Products || '',
-      website: row.Website || '',
-      logo: row.Logo || null
+    // Mapping the new Excel structure to our application structure
+    const products = results.data.map(row => ({
+      name: row['/Company/@name'] || 'Unknown Company',
+      description: `${row['/Company/md'] || 'No description available'}`,
+      location: row['/Company/postaladdress'] || 'Unknown',
+      industry: row['/Company/type'] || 'Uncategorized',
+      products: row['/Company/products'] || '',
+      website: row['/Company/website'] || '',
+      companyDetails: {
+        email: row['/Company/email'] || '',
+        phone: row['/Company/phone'] || '',
+        fax: row['/Company/fax'] || '',
+        year: row['/Company/year'] || '',
+        employees: row['/Company/noe'] || '',
+        contactPerson: row['/Company/cp'] || '',
+        contactNumber: row['/Company/cpnumber'] || '',
+        plantAddress: row['/Company/plantaddress'] || '',
+        plantEmail: row['/Company/plemail'] || '',
+        plantPhone: row['/Company/plphone'] || '',
+        services: row['/Company/ser'] || '',
+        annualProduction: row['/Company/ap'] || '',
+        consumption: row['/Company/cons'] || ''
+      }
     }));
     
     res.status(200).json(products);
